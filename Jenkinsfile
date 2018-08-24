@@ -1,6 +1,10 @@
 pipeline {
     // A declarative pipeline
     agent any
+
+    tools {
+        maven 'localMaven'
+    }
     
     stages{
 
