@@ -1,28 +1,24 @@
 pipeline {
+    // A declarative pipeline
     agent any
     
     stages{
 
-        stage('Init'){
-            steps {
-               echo "Testing..."
-            }
-        
-        }
-
         stage('Build'){
             steps {
-              echo "Building..." 
+               echo 'mvn clean package'
             }
         
         }
 
-         stage('Deploy'){
-            steps {
-               echo "Code deployed..."
+        post {
+            success {
+                echo 'Now Archiving....'
+                archiveArtifacts artifacts: '**/target/*.war'
             }
-        
+
         }
+
 
     }
 }
