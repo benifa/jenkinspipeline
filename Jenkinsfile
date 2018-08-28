@@ -2,12 +2,20 @@ pipeline {
     // A declarative pipeline
     agent any
 
-    tools {
-        maven 'localMaven'
+     parameters {
+        string (name: 'tomcat_dev', defaultValue:'18.216.188.151', description:'Staging env')
+        string (name: 'tomcat_prod', defaultValue:'13.59.97.147', description:'Production env')
     }
-    
-    stages{
 
+    triggers {
+        pollSCM('* * * * *')
+    }
+
+    // tools {
+    //     maven 'localMaven'
+    // }
+    
+    stages('Deployments'){
         stage('Build'){
             steps {
                sh 'mvn clean package'
@@ -21,30 +29,20 @@ pipeline {
             }
 
         }
-        
-        stage('Deploy to Staging'){
-            steps {
-                build job: 'Deploy-to-staging'
-            }
-        }
 
-        stage('Deploy to Production'){
-            steps {
-                timeout(time:5, unit:'DAYS'){
-                    input message:'Approve Production Deployment'
-                }
-                build job: 'Deploy-to-prod'
-            }
-
-            post {
-                success {
-                    echo 'Code deployed to production'
-                }
-
-                failure {
-                    echo 'Deployment failed'
+        parallel('Deployments'){
+            stage('Deploy to Staging'){
+                steps{
+                    sh "scp -i /home/projects/jenkins/tomcat-demo.pem **/target/*.war ec2-user@${params.tomcat_dev}:/var/lib/tomcat7/webapps"
                 }
             }
+
+            stage('Deploy to Production'){
+                steps{
+                     sh "scp -i /home/projects/jenkins/tomcat-demo.pem **/target/*.war ec2-user@${params.tomcat_prod}:/var/lib/tomcat7/webapps"
+                }
+            }
+
         }
         
     }
