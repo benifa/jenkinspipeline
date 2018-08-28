@@ -11,9 +11,9 @@ pipeline {
         pollSCM('* * * * *')
     }
 
-    // tools {
-    //     maven 'localMaven'
-    // }
+    tools {
+        maven 'localMaven'
+    }
     
     stages('Deployments'){
         stage('Build'){
